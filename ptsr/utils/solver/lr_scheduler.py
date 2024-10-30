@@ -9,6 +9,7 @@ import torch
 # As a result, "epoch" (e.g., as in self.last_epoch) should be understood to mean
 # "iteration" instead.
 
+
 class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
     def __init__(
         self,
@@ -22,7 +23,8 @@ class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
     ):
         if not list(milestones) == sorted(milestones):
             raise ValueError(
-                "Milestones should be a list of" " increasing integers. Got {}", milestones
+                "Milestones should be a list of" " increasing integers. Got {}",
+                milestones,
             )
         self.milestones = milestones
         self.gamma = gamma
@@ -36,7 +38,9 @@ class WarmupMultiStepLR(torch.optim.lr_scheduler._LRScheduler):
             self.warmup_method, self.last_epoch, self.warmup_iters, self.warmup_factor
         )
         return [
-            base_lr * warmup_factor * self.gamma ** bisect_right(self.milestones, self.last_epoch)
+            base_lr
+            * warmup_factor
+            * self.gamma ** bisect_right(self.milestones, self.last_epoch)
             for base_lr in self.base_lrs
         ]
 
@@ -54,7 +58,7 @@ class WarmupCosineLR(torch.optim.lr_scheduler._LRScheduler):
         warmup_iters: int = 1000,
         warmup_method: str = "linear",
         last_epoch: int = -1,
-        min_lr: float = 0.0, # minimal learning rate
+        min_lr: float = 0.0,  # minimal learning rate
     ):
         self.max_iters = max_iters
         self.warmup_factor = warmup_factor
@@ -72,11 +76,14 @@ class WarmupCosineLR(torch.optim.lr_scheduler._LRScheduler):
         # factor. An alternative is to start the period of the cosine at warmup_iters
         # instead of at 0. In the case that warmup_iters << max_iters the two are
         # very close to each other.
-        return [max(self.min_lr,
-            base_lr
-            * warmup_factor
-            * 0.5
-            * (1.0 + math.cos(math.pi * self.last_epoch / self.max_iters)))
+        return [
+            max(
+                self.min_lr,
+                base_lr
+                * warmup_factor
+                * 0.5
+                * (1.0 + math.cos(math.pi * self.last_epoch / self.max_iters)),
+            )
             for base_lr in self.base_lrs
         ]
 

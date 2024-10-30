@@ -5,8 +5,7 @@ from .defaults import get_cfg_defaults
 
 
 def load_cfg(args: argparse.Namespace):
-    """Load configurations.
-    """
+    """Load configurations."""
     # Set configurations
     cfg = get_cfg_defaults()
     if args.config_base is not None:
@@ -20,12 +19,11 @@ def load_cfg(args: argparse.Namespace):
 
 
 def overwrite_cfg(cfg: CfgNode, args: argparse.Namespace):
-    r"""Overwrite some configs given configs or args with higher priority.
-    """
+    r"""Overwrite some configs given configs or args with higher priority."""
     # Distributed training:
     if args.distributed:
         cfg.SYSTEM.DISTRIBUTED = True
-        cfg.SYSTEM.PARALLEL = 'DDP'
+        cfg.SYSTEM.PARALLEL = "DDP"
 
     if cfg.SOLVER.TEST_ONLY:
-        cfg.DATASET.DATA_EXT = 'img'
+        cfg.DATASET.DATA_EXT = "img"

@@ -32,7 +32,7 @@ class ResidualGroup(nn.Module):
         short_skip: bool = False,
         out_conv: bool = False,
         df_conv: bool = False,
-        **kwargs
+        **kwargs,
     ):
         super().__init__()
         self.short_skip = short_skip
@@ -63,7 +63,7 @@ class ISRNet(nn.Module):
         channels: int = 3,
         rgb_range: int = 255,
         act_mode: str = "relu",
-        **kwargs
+        **kwargs,
     ):
         super().__init__()
         self.sub_mean = MeanShift(rgb_range)
@@ -77,7 +77,7 @@ class ISRNet(nn.Module):
                 planes,
                 act_mode=act_mode,
                 prob=prob[i],
-                **kwargs
+                **kwargs,
             )
             for i in range(n_resgroups)
         ]

@@ -6,14 +6,13 @@ from ptsr.model import Model
 from ptsr.model.common import *
 from ptsr.model._utils import conv3x3
 
+
 class TestModel(unittest.TestCase):
     def setUp(self) -> None:
-        self.device = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def test_layers(self):
-        """Test regular and deformable convolution layers.
-        """
+        """Test regular and deformable convolution layers."""
         c = 64
         input_size = (4, c, 32, 32)
         x = torch.rand(input_size).to(self.device)
@@ -22,12 +21,19 @@ class TestModel(unittest.TestCase):
             self.assertTupleEqual(input_size, m(x).size())
 
     def test_building_blocks(self):
-        c, act_mode = 64, 'elu'
+        c, act_mode = 64, "elu"
         input_size = (4, c, 32, 32)
         x = torch.rand(input_size).to(self.device)
         for block in [
-                PreActBasicBlock, PreActBottleneck, MBConvBlock, PreActBasicBlockDW,
-                EDSRBlock, RCANBlock, RCANBlockDW, RCANBlockAllDW]:
+            PreActBasicBlock,
+            PreActBottleneck,
+            MBConvBlock,
+            PreActBasicBlockDW,
+            EDSRBlock,
+            RCANBlock,
+            RCANBlockDW,
+            RCANBlockAllDW,
+        ]:
             m = block(planes=c, act_mode=act_mode).to(self.device)
             self.assertTupleEqual(input_size, m(x).size())
 

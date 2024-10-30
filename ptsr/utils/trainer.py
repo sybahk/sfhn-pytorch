@@ -170,13 +170,13 @@ class Trainer:
                         sr = utility.quantize(sr, self.cfg.DATASET.RGB_RANGE)
 
                         save_list = [sr]
-                        self.ckp.log[
-                            -1, idx_data, idx_scale
-                        ] += utility.calc_psnr_torch(
-                            sr,
-                            hr.to(sr.device),
-                            scale,
-                            float(self.cfg.DATASET.RGB_RANGE),
+                        self.ckp.log[-1, idx_data, idx_scale] += (
+                            utility.calc_psnr_torch(
+                                sr,
+                                hr.to(sr.device),
+                                scale,
+                                float(self.cfg.DATASET.RGB_RANGE),
+                            )
                         )
 
                         if self.cfg.LOG.SAVE_GT:

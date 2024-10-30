@@ -28,8 +28,8 @@ def get_patch(*args, patch_size=96, scale=2, multi=False, input_large=False):
         tx, ty = ix, iy
 
     ret = [
-        args[0][iy:iy + ip, ix:ix + ip, :],
-        *[a[ty:ty + tp, tx:tx + tp, :] for a in args[1:]]
+        args[0][iy : iy + ip, ix : ix + ip, :],
+        *[a[ty : ty + tp, tx : tx + tp, :] for a in args[1:]],
     ]
 
     return ret
@@ -61,9 +61,11 @@ def np2Tensor(*args, rgb_range=255):
 
     return [_np2Tensor(a) for a in args]
 
+
 ############
 # Augments #
 ############
+
 
 def augment(*args, hflip=True, rot=True, invert=False, c_shuffle=False):
     # apply augmentation to images of shape (H, W, C)
@@ -87,7 +89,7 @@ def augment(*args, hflip=True, rot=True, invert=False, c_shuffle=False):
         if c_shuffle:
             img = channel_shuffle(img, c_order)
         if invert:
-            img = 255 - img # uint8 image
+            img = 255 - img  # uint8 image
         return img
 
     # apply the same transformation for all images
@@ -98,9 +100,10 @@ def channel_shuffle(img: np.array, c_order: List[int]):
     # change the order of (color) channels
     return img[..., c_order]
 
+
 class Mixup:
     def __init__(self, bs=16, beta=0.15, choice_thresh=0.3):
-        self.beta = Beta(torch.zeros(bs)+beta, torch.zeros(bs)+beta)
+        self.beta = Beta(torch.zeros(bs) + beta, torch.zeros(bs) + beta)
         self.choice_thresh = choice_thresh
 
     @torch.no_grad()
@@ -110,7 +113,7 @@ class Mixup:
         lr_perm, hr_perm = lr[perm], hr[perm]
         choices = torch.rand(lr.shape[0])
         idx = torch.where(choices > self.choice_thresh)
-        betas[idx] = 1. # only choice_thresh% of samples in batch will be mixed
-        lr = lr * betas.view(-1, 1, 1, 1) + lr_perm * (1-betas.view(-1, 1, 1, 1))
-        hr = hr * betas.view(-1, 1, 1, 1) + hr_perm * (1-betas.view(-1, 1, 1, 1))
+        betas[idx] = 1.0  # only choice_thresh% of samples in batch will be mixed
+        lr = lr * betas.view(-1, 1, 1, 1) + lr_perm * (1 - betas.view(-1, 1, 1, 1))
+        hr = hr * betas.view(-1, 1, 1, 1) + hr_perm * (1 - betas.view(-1, 1, 1, 1))
         return lr, hr

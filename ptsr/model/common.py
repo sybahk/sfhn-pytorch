@@ -65,7 +65,7 @@ class PreActBasicBlock(ResidualBase):
         multFlag: bool = True,
         zero_inti_residual: bool = False,
         affine_init_w: float = 0.1,
-        **_
+        **_,
     ) -> None:
         super().__init__(stochastic_depth, prob, multFlag)
         self.aff1 = Affine2d(planes, affine_init_w)
@@ -139,7 +139,7 @@ class PreActBottleneck(ResidualBase):
         multFlag: bool = True,
         zero_inti_residual: bool = False,
         affine_init_w: float = 0.1,
-        **_
+        **_,
     ) -> None:
         super().__init__(stochastic_depth, prob, multFlag)
         self.aff1 = Affine2d(planes, affine_init_w)
@@ -227,7 +227,7 @@ class EDSRBlock(ResidualBase):
         stochastic_depth: bool = False,
         prob: float = 1.0,
         multFlag: bool = True,
-        **_
+        **_,
     ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
@@ -259,7 +259,7 @@ class RCANBlock(ResidualBase):
         prob: float = 1.0,
         multFlag: bool = True,
         normal_init_std: Optional[float] = None,
-        **_
+        **_,
     ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
@@ -297,7 +297,7 @@ class SFHNBlock(ResidualBase):
         prob: float = 1.0,
         multFlag: bool = True,
         normal_init_std: Optional[float] = None,
-        **_
+        **_,
     ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
@@ -348,7 +348,7 @@ class RCANBlockDW(ResidualBase):
         stochastic_depth: bool = False,
         prob: float = 1.0,
         multFlag: bool = True,
-        **_
+        **_,
     ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
@@ -385,7 +385,7 @@ class RCANBlockAllDW(ResidualBase):
         stochastic_depth: bool = False,
         prob: float = 1.0,
         multFlag: bool = True,
-        **_
+        **_,
     ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
