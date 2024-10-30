@@ -312,9 +312,9 @@ class SFHNBlock(ResidualBase):
             SEBlock(planes, reduction, act_mode),
         )
         self.freq = nn.Sequential(
-            conv1x1(planes * 2, planes * 2, bias=bias),
+            conv1x1(planes * 2, planes * 2, bias=False),
             get_activation(act_mode),
-            conv1x1(planes * 2, planes * 2, bias=bias),
+            conv1x1(planes * 2, planes * 2, bias=False),
         )
 
         # normal initialization
@@ -323,13 +323,13 @@ class SFHNBlock(ResidualBase):
                 nn.init.normal_(self.body[idx].weight, 0.0, normal_init_std)
 
     def _forward_res(self, x: torch.Tensor) -> torch.Tensor:
-        freq_x = x
-        freq_x = torch.fft.fft2(freq_x, norm="ortho")
-        freq_x = torch.cat(freq_x.real, freq_x.imag, dim=1)
-        freq_x = self.freq(freq_x)
+        freq_x = torch.fft.rfft2(x.float(), norm="ortho")
+        freq_x = torch.cat((freq_x.real, freq_x.imag), dim=1)
+        freq_x = self.freq(freq_x).float()
         freq_x_real, freq_x_imag = freq_x.chunk(2, 1)
         freq_x = torch.complex(freq_x_real, freq_x_imag)
-        freq_x = torch.fft.ifft2(freq_x, norm="ortho")
+        freq_x = torch.fft.irfft2(freq_x, norm="ortho")
+
         x = (self.body(x) + freq_x).mul(self.res_scale)
         return x
 
@@ -435,8 +435,7 @@ class MeanShift(nn.Conv2d):
         std = torch.Tensor(rgb_std)
         self.weight.data = torch.eye(3).view(3, 3, 1, 1) / std.view(3, 1, 1, 1)
         self.bias.data = sign * rgb_range * torch.Tensor(rgb_mean) / std
-        for p in self.parameters():
-            p.requires_grad = False
+        self.requires_grad_(False)
 
 
 class Affine2d(nn.Module):

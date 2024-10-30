@@ -77,7 +77,7 @@ class Trainer:
 
             # full-precision when finetuning tail
             autocast_enabled = self.mixed_fp and self.tail_only_iter <= 0
-            with autocast(enabled=autocast_enabled):
+            with autocast(enabled=autocast_enabled, dtype=torch.bfloat16):
                 sr = self.model(lr)
                 loss = self.loss(sr, hr)
 
@@ -93,6 +93,9 @@ class Trainer:
             self.scheduler_step(i)  # update SWA model if it exists
             if (self.rank is None or self.rank == 0) and i % 10 == 0:
                 self.log_train(i, loss, timer)
+
+                if i + 1 == 1:
+                    timer.tic()  # remove compile time
 
             del lr, hr, sr, loss  # Release some GPU memory
 

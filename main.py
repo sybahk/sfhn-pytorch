@@ -21,6 +21,7 @@ def init_seed(seed: int):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
+    torch._dynamo.config.optimize_ddp = False
 
 
 def get_args():
@@ -123,6 +124,7 @@ def main():
 
 def build_model_loss(cfg, rank, checkpoint, device):
     _model = model.Model(cfg, checkpoint).to(device)
+    _model.model.compile(fullgraph=True)
     if rank is None or rank == 0:
         print("Total number of parameters: ", get_num_params(_model))
 

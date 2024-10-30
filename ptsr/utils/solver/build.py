@@ -94,6 +94,7 @@ def maybe_add_gradient_clipping(
     optimizer.__class__ = OptimizerWithGradientClip
     return optimizer
 
+
 # 1. Build Optimizer
 
 
@@ -134,53 +135,54 @@ def build_optimizer(cfg: CfgNode, model: torch.nn.Module) -> torch.optim.Optimiz
                 lr = cfg.SOLVER.BASE_LR * cfg.SOLVER.BIAS_LR_FACTOR
                 weight_decay = cfg.SOLVER.WEIGHT_DECAY_BIAS
             # Scale learning rate for residual blocks
-            if res_factor is not None: 
-                prefix = module_name.split('.')[:6]
-                prefix = '.'.join(prefix)
+            if res_factor is not None:
+                prefix = module_name.split(".")[:6]
+                prefix = ".".join(prefix)
                 if prefix in res_name_list:
                     lr *= res_factor
 
-            params += [{"params": [value], "lr": lr,
-                        "weight_decay": weight_decay}]
+            params += [{"params": [value], "lr": lr, "weight_decay": weight_decay}]
 
     solver_name = cfg.SOLVER.NAME
-    if solver_name == 'SGD':
+    if solver_name == "SGD":
         optimizer = torch.optim.SGD(
-            params, cfg.SOLVER.BASE_LR, momentum=cfg.SOLVER.MOMENTUM)
-    elif solver_name in ['Adam', 'AdamW']:
+            params, cfg.SOLVER.BASE_LR, momentum=cfg.SOLVER.MOMENTUM
+        )
+    elif solver_name in ["Adam", "AdamW"]:
         optimizer = getattr(torch.optim, solver_name)(
-            params, cfg.SOLVER.BASE_LR, betas=cfg.SOLVER.BETAS)
-    elif solver_name == 'LARS': # Large-batch version of SGD
+            params, cfg.SOLVER.BASE_LR, betas=cfg.SOLVER.BETAS
+        )
+    elif solver_name == "LARS":  # Large-batch version of SGD
         optimizer = LARS(params, cfg.SOLVER.BASE_LR, momentum=cfg.SOLVER.MOMENTUM)
-    elif solver_name == 'Lamb': # Large-batch version of Adam
-        if cfg.MODEL.MIXED_PRECESION:
-            optimizer = Lamb16(
-                params, cfg.SOLVER.BASE_LR, betas=cfg.SOLVER.BETAS,
-                eps=cfg.SOLVER.EPS, clamp_trust_ratio=cfg.SOLVER.CLAMP_TRUST_RATIO,
-            )
-        else:
-            optimizer = Lamb(params, cfg.SOLVER.BASE_LR, betas=cfg.SOLVER.BETAS)
+    elif solver_name == "Lamb":  # Large-batch version of Adam
+        # if cfg.MODEL.MIXED_PRECESION:
+        #     optimizer = Lamb16(
+        #         params, cfg.SOLVER.BASE_LR, betas=cfg.SOLVER.BETAS,
+        #         eps=cfg.SOLVER.EPS, clamp_trust_ratio=cfg.SOLVER.CLAMP_TRUST_RATIO,
+        #     )
+        # else:
+        optimizer = Lamb(params, cfg.SOLVER.BASE_LR, betas=cfg.SOLVER.BETAS)
     else:
-        raise ValueError(
-            "Solver type {} is not supported!".format(solver_name))
+        raise ValueError("Solver type {} is not supported!".format(solver_name))
 
     optimizer = maybe_add_gradient_clipping(cfg, optimizer)
-    print('Optimizer: ', optimizer.__class__.__name__)
+    print("Optimizer: ", optimizer.__class__.__name__)
     return optimizer
+
 
 def _create_residual_name(cfg):
     if cfg.SOLVER.RESIDUAL_LR_FACTOR is None:
         return None, None
 
-    assert cfg.MODEL.BLOCK_TYPE in [
-        'rcan_block', 'rcan_block_dw', 'rcan_block_all_dw']
+    assert cfg.MODEL.BLOCK_TYPE in ["rcan_block", "rcan_block_dw", "rcan_block_all_dw"]
 
     name_list = []
-    prefix = 'module.model.body.'
+    prefix = "module.model.body."
     for i in range(cfg.MODEL.N_RESGROUPS):
         for j in range(cfg.MODEL.N_RESBLOCKS):
-            name_list.append(prefix + str(i) + '.body.' + str(j))
+            name_list.append(prefix + str(i) + ".body." + str(j))
     return name_list, cfg.SOLVER.RESIDUAL_LR_FACTOR
+
 
 # 2. Build LR Scheduler
 
@@ -212,28 +214,34 @@ def build_lr_scheduler(
         )
     elif name == "MultiStepLR":
         return MultiStepLR(
-            optimizer,
-            milestones=cfg.SOLVER.STEPS,
-            gamma=cfg.SOLVER.GAMMA
+            optimizer, milestones=cfg.SOLVER.STEPS, gamma=cfg.SOLVER.GAMMA
         )
     elif name == "ReduceLROnPlateau":
         return ReduceLROnPlateau(
             optimizer,
-            mode='min', factor=cfg.SOLVER.GAMMA, patience=1000,
-            threshold=0.001, threshold_mode='rel', cooldown=0,
-            min_lr=1e-06, eps=1e-08
+            mode="min",
+            factor=cfg.SOLVER.GAMMA,
+            patience=1000,
+            threshold=0.001,
+            threshold_mode="rel",
+            cooldown=0,
+            min_lr=1e-06,
+            eps=1e-08,
         )
     else:
         raise ValueError("Unknown LR scheduler: {}".format(name))
 
+
 # 3. Build SWA model
 
 
-def build_swa_model(cfg: CfgNode,
-                    model: torch.nn.Module,
-                    optimizer: torch.optim.Optimizer,
-                    device: torch.device,
-                    is_pretrained: bool = False):
+def build_swa_model(
+    cfg: CfgNode,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device,
+    is_pretrained: bool = False,
+):
     # Instead of copying weights during initialization, the SWA model copys
     # the model weights when self.update_parameters is first called.
     # https://github.com/pytorch/pytorch/blob/1.7/torch/optim/swa_utils.py#L107
@@ -243,7 +251,7 @@ def build_swa_model(cfg: CfgNode,
     swa_model = AveragedModel(model).to(device)
     if is_pretrained:
         swa_model.update_parameters(model)
-        
+
     lr = cfg.SOLVER.BASE_LR
     lr *= cfg.SOLVER.SWA.LR_FACTOR
     swa_scheduler = SWALR(optimizer, swa_lr=lr)

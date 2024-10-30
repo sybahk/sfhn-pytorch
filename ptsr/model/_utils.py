@@ -66,18 +66,22 @@ def conv3x3(
     )
 
 
-def conv1x1(in_planes: int, out_planes: int, stride: int = 1) -> nn.Conv2d:
+def conv1x1(
+    in_planes: int, out_planes: int, stride: int = 1, bias: bool = False
+) -> nn.Conv2d:
     """1x1 convolution"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
+    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=bias)
 
 
 class FreqL1Loss(nn.Module):
     def forward(self, x, target):
+        x = x.float()
+        target = target.float()
         pix_l1 = F.l1_loss(x, target)
-        x = torch.fft.fft2(x, norm="ortho")
-        x = torch.cat(x.real, x.imag, dim=1)
-        target = torch.fft.fft2(target, norm="ortho")
-        target = torch.cat(target.real, target.imag, dim=1)
+        x = torch.fft.rfft2(x, norm="ortho")
+        x = torch.cat((x.real, x.imag), dim=1)
+        target = torch.fft.rfft2(target, norm="ortho")
+        target = torch.cat((target.real, target.imag), dim=1)
         return pix_l1 + F.l1_loss(x, target) * 0.1
 
 
