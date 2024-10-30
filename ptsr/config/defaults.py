@@ -10,7 +10,7 @@ _C.DEBUG = False
 # -----------------------------------------------------------------------------
 _C.SYSTEM = CN()
 _C.SYSTEM.DISTRIBUTED = False
-_C.SYSTEM.PARALLEL = 'DP'
+_C.SYSTEM.PARALLEL = "DP"
 _C.SYSTEM.NUM_CPU = 4
 _C.SYSTEM.NUM_GPU = 1
 
@@ -22,19 +22,19 @@ _C.MODEL = CN()
 # Mixed-precision training/inference
 _C.MODEL.MIXED_PRECESION = False
 
-_C.MODEL.ACT_MODE = 'relu'
+_C.MODEL.ACT_MODE = "relu"
 _C.MODEL.PRE_TRAIN = None
 _C.MODEL.CKP_STRICT = True
 _C.MODEL.CKP_IGNORE = None
 
-_C.MODEL.EXTEND = '.'
-_C.MODEL.BLOCK_TYPE = 'basicblock'
+_C.MODEL.EXTEND = "."
+_C.MODEL.BLOCK_TYPE = "basicblock"
 _C.MODEL.N_RESBLOCKS = 8
 _C.MODEL.N_RESGROUPS = 8
 _C.MODEL.OUT_CONV = False  # additional conv for each residual group
 _C.MODEL.PLANES = 64
 _C.MODEL.STOCHASTIC_DEPTH = False
-_C.MODEL.STOCHASTIC_DEPTH_PROB = None # survival probability
+_C.MODEL.STOCHASTIC_DEPTH_PROB = None  # survival probability
 _C.MODEL.ZERO_INIT_RESIDUAL = True
 _C.MODEL.MULT_FLAG = True
 _C.MODEL.EXPANSION = 1
@@ -52,21 +52,20 @@ _C.MODEL.NORMAL_INIT_STD = None
 _C.MODEL.RES_SCALE = 0.1
 _C.MODEL.RES_SCALE_LEARNABLE = False
 
-_C.MODEL.ENSEMBLE = CN({"ENABLED":False})
-_C.MODEL.ENSEMBLE.MODE = 'mean' # mean, median
+_C.MODEL.ENSEMBLE = CN({"ENABLED": False})
+_C.MODEL.ENSEMBLE.MODE = "mean"  # mean, median
 
 # -----------------------------------------------------------------------------
 # Dataset
 # -----------------------------------------------------------------------------
 _C.DATASET = CN()
-_C.DATASET.DATA_DIR = '/datasets/SR/BIX2X3X4'
-_C.DATASET.DEMO_DIR = '../test'
-_C.DATASET.DATA_TRAIN = ['DF2K']
-_C.DATASET.DATA_VAL = ['DF2K']
-_C.DATASET.DATA_TEST = ['DF2K', 'Set5',
-                        'Set14C', 'B100', 'Urban100', 'Manga109']
+_C.DATASET.DATA_DIR = "/datasets/SR/BIX2X3X4"
+_C.DATASET.DEMO_DIR = "../test"
+_C.DATASET.DATA_TRAIN = ["DF2K"]
+_C.DATASET.DATA_VAL = ["DF2K"]
+_C.DATASET.DATA_TEST = ["DF2K", "Set5", "Set14C", "B100", "Urban100", "Manga109"]
 _C.DATASET.DATA_RANGE = [[1, 3550], [3551, 3555]]
-_C.DATASET.DATA_EXT = 'bin'  # 'bin', 'sep' or 'img'
+_C.DATASET.DATA_EXT = "bin"  # 'bin', 'sep' or 'img'
 _C.DATASET.DATA_SCALE = [4]
 _C.DATASET.OUT_PATCH_SIZE = 192  # square patch size of model output
 _C.DATASET.RGB_RANGE = 255
@@ -85,7 +84,7 @@ _C.DATASET.REJECTION_SAMPLING.MAX_PSNR = 25.0
 _C.DATASET.REJECTION_SAMPLING.PROB = 0.2
 
 _C.DATASET.FINETUNE = CN({"ENABLED": False})
-_C.DATASET.FINETUNE.DATA = ['Set5']
+_C.DATASET.FINETUNE.DATA = ["Set5"]
 
 
 # -----------------------------------------------------------------------------
@@ -103,9 +102,9 @@ _C.AUGMENT.MIXUP.BETA = 0.15
 _C.SOLVER = CN()
 
 # Solver type needs to be one of 'SGD', 'Adam', 'AdamW'
-_C.SOLVER.NAME = 'Adam'
+_C.SOLVER.NAME = "Adam"
 
-_C.SOLVER.EPS = 1e-6 # change to 1e-4 in mixed-precision training
+_C.SOLVER.EPS = 1e-6  # change to 1e-4 in mixed-precision training
 # Set the trust ratio clamp value to a large number (e.g., 1e6) to
 # avoid truncating trust ratio in LAMB16 optimizer.
 _C.SOLVER.CLAMP_TRUST_RATIO = 1e6
@@ -142,7 +141,7 @@ _C.SOLVER.WEIGHT_DECAY_BIAS = 0.0
 _C.SOLVER.GAMMA = 0.5
 
 # should be a tuple like (30000,)
-_C.SOLVER.STEPS = (300000, )
+_C.SOLVER.STEPS = (300000,)
 
 _C.SOLVER.WARMUP_FACTOR = 1.0 / 1000
 
@@ -181,14 +180,15 @@ _C.SOLVER.GAN_K = 1
 _C.SOLVER.RESIDUAL_LR_FACTOR = None
 
 _C.SOLVER.LOSS = CN()
-_C.SOLVER.LOSS.CONFIG = '1*L1'
+_C.SOLVER.LOSS.CONFIG = "1*L1"
 _C.SOLVER.LOSS.SKIP_THRES = 1e8
+_C.SOLVER.LOSS.FREQ = False
 # -----------------------------------------------------------------------------
 # Log
 # -----------------------------------------------------------------------------
 _C.LOG = CN()
-_C.LOG.SAVE = 'test'
-_C.LOG.LOAD = ''
+_C.LOG.SAVE = "test"
+_C.LOG.LOAD = ""
 _C.LOG.RESUME = 0
 _C.LOG.SAVE_MODELS = False
 _C.LOG.PRINT_EVERY = 100

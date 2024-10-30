@@ -9,8 +9,9 @@ from ._utils import conv3x3, conv1x1, get_activation
 
 
 class ResidualBase(nn.Module):
-    def __init__(self, stochastic_depth: bool = False,
-                 prob: float = 1.0, multFlag: bool = True) -> None:
+    def __init__(
+        self, stochastic_depth: bool = False, prob: float = 1.0, multFlag: bool = True
+    ) -> None:
         super().__init__()
         self.sd = stochastic_depth
         if stochastic_depth:
@@ -19,15 +20,18 @@ class ResidualBase(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         identity = x.clone()
-        return self._forward_train(x, identity) if self.training \
+        return (
+            self._forward_train(x, identity)
+            if self.training
             else self._forward_test(x, identity)
+        )
 
     def _forward_train(self, x, identity) -> torch.Tensor:
-        if not self.sd: # no stochastic depth
+        if not self.sd:  # no stochastic depth
             res = self._forward_res(x)
             return identity + res
-        
-        if torch.rand(1) < self.prob: # no skip
+
+        if torch.rand(1) < self.prob:  # no skip
             for param in self.parameters():
                 param.requires_grad = True
             res = self._forward_res(x)
@@ -52,10 +56,17 @@ class ResidualBase(nn.Module):
 
 
 class PreActBasicBlock(ResidualBase):
-    def __init__(self, planes: int, stochastic_depth: bool = False,
-                 act_mode: str = 'relu', prob: float = 1.0, multFlag: bool = True,
-                 zero_inti_residual: bool = False, affine_init_w: float = 0.1,
-                 **_) -> None:
+    def __init__(
+        self,
+        planes: int,
+        stochastic_depth: bool = False,
+        act_mode: str = "relu",
+        prob: float = 1.0,
+        multFlag: bool = True,
+        zero_inti_residual: bool = False,
+        affine_init_w: float = 0.1,
+        **_
+    ) -> None:
         super().__init__(stochastic_depth, prob, multFlag)
         self.aff1 = Affine2d(planes, affine_init_w)
         self.conv1 = conv3x3(planes, planes)
@@ -80,10 +91,17 @@ class PreActBasicBlock(ResidualBase):
 
 
 class PreActBasicBlockDW(ResidualBase):
-    def __init__(self, planes: int, stochastic_depth: bool = False,
-                 act_mode: str = 'relu', prob: float = 1.0, multFlag: bool = True,
-                 zero_inti_residual: bool = False, affine_init_w: float = 0.1,
-                 reduction: int = 8) -> None:
+    def __init__(
+        self,
+        planes: int,
+        stochastic_depth: bool = False,
+        act_mode: str = "relu",
+        prob: float = 1.0,
+        multFlag: bool = True,
+        zero_inti_residual: bool = False,
+        affine_init_w: float = 0.1,
+        reduction: int = 8,
+    ) -> None:
         super().__init__(stochastic_depth, prob, multFlag)
         self.aff1 = Affine2d(planes, affine_init_w)
         self.conv1 = conv3x3(planes, planes, groups=planes)
@@ -112,10 +130,17 @@ class PreActBasicBlockDW(ResidualBase):
 
 
 class PreActBottleneck(ResidualBase):
-    def __init__(self, planes: int, stochastic_depth: bool = False,
-                 act_mode: str = 'relu', prob: float = 1.0, multFlag: bool = True,
-                 zero_inti_residual: bool = False, affine_init_w: float = 0.1,
-                 **_) -> None:
+    def __init__(
+        self,
+        planes: int,
+        stochastic_depth: bool = False,
+        act_mode: str = "relu",
+        prob: float = 1.0,
+        multFlag: bool = True,
+        zero_inti_residual: bool = False,
+        affine_init_w: float = 0.1,
+        **_
+    ) -> None:
         super().__init__(stochastic_depth, prob, multFlag)
         self.aff1 = Affine2d(planes, affine_init_w)
         self.conv1 = conv1x1(planes, planes)
@@ -147,9 +172,17 @@ class PreActBottleneck(ResidualBase):
 
 
 class MBConvBlock(ResidualBase):
-    def __init__(self, planes: int, stochastic_depth: bool = False, act_mode: str = 'relu',
-                 prob: float = 1.0, multFlag: bool = True, reduction: int = 8,
-                 zero_inti_residual: bool = False, affine_init_w: float = 0.1) -> None:
+    def __init__(
+        self,
+        planes: int,
+        stochastic_depth: bool = False,
+        act_mode: str = "relu",
+        prob: float = 1.0,
+        multFlag: bool = True,
+        reduction: int = 8,
+        zero_inti_residual: bool = False,
+        affine_init_w: float = 0.1,
+    ) -> None:
         super().__init__(stochastic_depth, prob, multFlag)
 
         self.conv1 = conv1x1(planes, planes)
@@ -184,9 +217,18 @@ class MBConvBlock(ResidualBase):
 
 
 class EDSRBlock(ResidualBase):
-    def __init__(self, planes: int, bias: bool = True,  act_mode: str = 'relu',
-                 res_scale: float = 0.1, res_scale_learnable: bool = False, 
-                 stochastic_depth: bool = False, prob: float = 1.0, multFlag: bool = True, **_):
+    def __init__(
+        self,
+        planes: int,
+        bias: bool = True,
+        act_mode: str = "relu",
+        res_scale: float = 0.1,
+        res_scale_learnable: bool = False,
+        stochastic_depth: bool = False,
+        prob: float = 1.0,
+        multFlag: bool = True,
+        **_
+    ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
             self.res_scale = Parameter(torch.ones(1))
@@ -196,7 +238,8 @@ class EDSRBlock(ResidualBase):
         self.body = nn.Sequential(
             conv3x3(planes, planes, bias=bias),
             get_activation(act_mode),
-            conv3x3(planes, planes, bias=bias))
+            conv3x3(planes, planes, bias=bias),
+        )
 
     def _forward_res(self, x: torch.Tensor) -> torch.Tensor:
         x = self.body(x).mul(self.res_scale)
@@ -204,10 +247,20 @@ class EDSRBlock(ResidualBase):
 
 
 class RCANBlock(ResidualBase):
-    def __init__(self, planes: int, bias: bool = True, act_mode: str = 'relu',
-                 res_scale: float = 0.1, reduction: int = 16, res_scale_learnable: bool = False, 
-                 stochastic_depth: bool = False, prob: float = 1.0, multFlag: bool = True, 
-                 normal_init_std: Optional[float] = None, **_):
+    def __init__(
+        self,
+        planes: int,
+        bias: bool = True,
+        act_mode: str = "relu",
+        res_scale: float = 0.1,
+        reduction: int = 16,
+        res_scale_learnable: bool = False,
+        stochastic_depth: bool = False,
+        prob: float = 1.0,
+        multFlag: bool = True,
+        normal_init_std: Optional[float] = None,
+        **_
+    ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
             self.res_scale = Parameter(torch.ones(1))
@@ -218,7 +271,8 @@ class RCANBlock(ResidualBase):
             conv3x3(planes, planes, bias=bias),
             get_activation(act_mode),
             conv3x3(planes, planes, bias=bias),
-            SEBlock(planes, reduction, act_mode))
+            SEBlock(planes, reduction, act_mode),
+        )
 
         # normal initialization
         if normal_init_std is not None:
@@ -230,12 +284,72 @@ class RCANBlock(ResidualBase):
         return x
 
 
+class SFHNBlock(ResidualBase):
+    def __init__(
+        self,
+        planes: int,
+        bias: bool = True,
+        act_mode: str = "relu",
+        res_scale: float = 0.1,
+        reduction: int = 16,
+        res_scale_learnable: bool = False,
+        stochastic_depth: bool = False,
+        prob: float = 1.0,
+        multFlag: bool = True,
+        normal_init_std: Optional[float] = None,
+        **_
+    ):
+        super().__init__(stochastic_depth, prob, multFlag)
+        if res_scale_learnable:
+            self.res_scale = Parameter(torch.ones(1))
+            nn.init.constant_(self.res_scale, res_scale)
+        else:
+            self.res_scale = res_scale
+        self.body = nn.Sequential(
+            conv3x3(planes, planes, bias=bias),
+            get_activation(act_mode),
+            conv3x3(planes, planes, bias=bias),
+            SEBlock(planes, reduction, act_mode),
+        )
+        self.freq = nn.Sequential(
+            conv1x1(planes * 2, planes * 2, bias=bias),
+            get_activation(act_mode),
+            conv1x1(planes * 2, planes * 2, bias=bias),
+        )
+
+        # normal initialization
+        if normal_init_std is not None:
+            for idx in [0, 2]:
+                nn.init.normal_(self.body[idx].weight, 0.0, normal_init_std)
+
+    def _forward_res(self, x: torch.Tensor) -> torch.Tensor:
+        freq_x = x
+        freq_x = torch.fft.fft2(freq_x, norm="ortho")
+        freq_x = torch.cat(freq_x.real, freq_x.imag, dim=1)
+        freq_x = self.freq(freq_x)
+        freq_x_real, freq_x_imag = freq_x.chunk(2, 1)
+        freq_x = torch.complex(freq_x_real, freq_x_imag)
+        freq_x = torch.fft.ifft2(freq_x, norm="ortho")
+        x = (self.body(x) + freq_x).mul(self.res_scale)
+        return x
+
+
 class RCANBlockDW(ResidualBase):
-    """RCAN building block with depth-wise convolution for the second conv layer.
-    """
-    def __init__(self, planes: int, bias: bool = True, act_mode: str = 'relu',
-                 res_scale: float = 0.1, reduction: int = 16, res_scale_learnable: bool = False, 
-                 stochastic_depth: bool = False, prob: float = 1.0, multFlag: bool = True, **_):
+    """RCAN building block with depth-wise convolution for the second conv layer."""
+
+    def __init__(
+        self,
+        planes: int,
+        bias: bool = True,
+        act_mode: str = "relu",
+        res_scale: float = 0.1,
+        reduction: int = 16,
+        res_scale_learnable: bool = False,
+        stochastic_depth: bool = False,
+        prob: float = 1.0,
+        multFlag: bool = True,
+        **_
+    ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
             self.res_scale = Parameter(torch.ones(1))
@@ -246,7 +360,8 @@ class RCANBlockDW(ResidualBase):
             conv3x3(planes, planes, bias=bias),
             get_activation(act_mode),
             conv3x3(planes, planes, bias=bias, groups=planes),
-            SEBlock(planes, reduction, act_mode))
+            SEBlock(planes, reduction, act_mode),
+        )
 
     def _forward_res(self, x: torch.Tensor) -> torch.Tensor:
         x = self.body(x).mul(self.res_scale)
@@ -256,11 +371,22 @@ class RCANBlockDW(ResidualBase):
 class RCANBlockAllDW(ResidualBase):
     """RCAN building block with depth-wise convolution for all conv layers. An
     additional squeeze-and-excitation (SE) block is used for the cross-channel
-    communication.  
+    communication.
     """
-    def __init__(self, planes: int, bias: bool = True, act_mode: str = 'relu',
-                 res_scale: float = 0.1, reduction: int = 16, res_scale_learnable: bool = False, 
-                 stochastic_depth: bool = False, prob: float = 1.0, multFlag: bool = True, **_):
+
+    def __init__(
+        self,
+        planes: int,
+        bias: bool = True,
+        act_mode: str = "relu",
+        res_scale: float = 0.1,
+        reduction: int = 16,
+        res_scale_learnable: bool = False,
+        stochastic_depth: bool = False,
+        prob: float = 1.0,
+        multFlag: bool = True,
+        **_
+    ):
         super().__init__(stochastic_depth, prob, multFlag)
         if res_scale_learnable:
             self.res_scale = Parameter(torch.ones(1))
@@ -272,7 +398,8 @@ class RCANBlockAllDW(ResidualBase):
             SEBlock(planes, reduction, act_mode),
             get_activation(act_mode),
             conv3x3(planes, planes, bias=bias, groups=planes),
-            SEBlock(planes, reduction, act_mode))
+            SEBlock(planes, reduction, act_mode),
+        )
 
     def _forward_res(self, x: torch.Tensor) -> torch.Tensor:
         x = self.body(x).mul(self.res_scale)
@@ -280,14 +407,14 @@ class RCANBlockAllDW(ResidualBase):
 
 
 class SEBlock(nn.Module):
-    def __init__(self, planes: int, reduction: int = 8, act_mode: str = 'relu'):
+    def __init__(self, planes: int, reduction: int = 8, act_mode: str = "relu"):
         super().__init__()
         self.squeeze = nn.AdaptiveAvgPool2d(1)
         self.excitation = nn.Sequential(
             nn.Conv2d(planes, planes // reduction, kernel_size=1),
             get_activation(act_mode),
             nn.Conv2d(planes // reduction, planes, kernel_size=1),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -297,8 +424,13 @@ class SEBlock(nn.Module):
 
 
 class MeanShift(nn.Conv2d):
-    def __init__(self, rgb_range, rgb_mean=(0.4488, 0.4371, 0.4040),
-                 rgb_std=(1.0, 1.0, 1.0), sign=-1):
+    def __init__(
+        self,
+        rgb_range,
+        rgb_mean=(0.4488, 0.4371, 0.4040),
+        rgb_std=(1.0, 1.0, 1.0),
+        sign=-1,
+    ):
         super(MeanShift, self).__init__(3, 3, kernel_size=1)
         std = torch.Tensor(rgb_std)
         self.weight.data = torch.eye(3).view(3, 3, 1, 1) / std.view(3, 1, 1, 1)
@@ -319,8 +451,9 @@ class Affine2d(nn.Module):
 
 
 class Upsampler(nn.Sequential):
-    def __init__(self, scale: int, planes: int, act_mode: str = 'relu',
-                 use_affine: bool = True):
+    def __init__(
+        self, scale: int, planes: int, act_mode: str = "relu", use_affine: bool = True
+    ):
         m = []
         if (scale & (scale - 1)) == 0:  # is power of 2
             if use_affine:
