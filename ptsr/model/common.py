@@ -328,7 +328,7 @@ class SFHNBlock(ResidualBase):
         freq_x = self.freq(freq_x).float()
         freq_x_real, freq_x_imag = freq_x.chunk(2, 1)
         freq_x = torch.complex(freq_x_real, freq_x_imag)
-        freq_x = torch.fft.irfft2(freq_x, norm="ortho")
+        freq_x = torch.fft.irfft2(freq_x, x.size()[-2:], norm="ortho")
 
         x = (self.body(x) + freq_x).mul(self.res_scale)
         return x

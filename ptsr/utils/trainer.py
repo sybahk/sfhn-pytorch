@@ -107,7 +107,12 @@ class Trainer:
 
                 if (i + 1) % self.cfg.SOLVER.ITERATION_SAVE == 0:
                     self.ckp.save(
-                        self, i + 1, False, self.iter_start, is_swa, iter_suffix=True
+                        self,
+                        i + 1,
+                        False,
+                        self.iter_start,
+                        is_swa,
+                        iter_suffix=True,
                     )
 
         # save stochastic weight averaging model
@@ -165,18 +170,20 @@ class Trainer:
                     d.dataset.set_scale(idx_scale)
                     for lr, hr, filename in tqdm(d, ncols=80):
                         lr = lr.to(self.device, non_blocking=True)
-                        with autocast(enabled=self.cfg.MODEL.MIXED_PRECESION):
+                        with autocast(
+                            enabled=self.cfg.MODEL.MIXED_PRECESION, dtype=torch.bfloat16
+                        ):
                             sr = self.swa_model(lr) if is_swa else self.model(lr)
                         sr = utility.quantize(sr, self.cfg.DATASET.RGB_RANGE)
 
                         save_list = [sr]
-                        self.ckp.log[-1, idx_data, idx_scale] += (
-                            utility.calc_psnr_torch(
-                                sr,
-                                hr.to(sr.device),
-                                scale,
-                                float(self.cfg.DATASET.RGB_RANGE),
-                            )
+                        self.ckp.log[
+                            -1, idx_data, idx_scale
+                        ] += utility.calc_psnr_torch(
+                            sr,
+                            hr.to(sr.device),
+                            scale,
+                            float(self.cfg.DATASET.RGB_RANGE),
                         )
 
                         if self.cfg.LOG.SAVE_GT:
